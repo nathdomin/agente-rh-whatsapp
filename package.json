@@ -1,0 +1,18 @@
+{
+  "name": "agente-rh-whatsapp",
+  "private": true,
+  "type": "module",
+  "engines": {
+    "node": ">=24"
+  },
+  "scripts": {
+    "test": "node --test tests/*.test.ts",
+    "ingest": "node --env-file=.env scripts/ingest.ts",
+    "hello": "node --env-file=.env scripts/send-hello.ts",
+    "eval": "node --env-file=.env evals/run.ts",
+    "demo": "node --env-file=.env scripts/demo-server.ts"
+  },
+  "devDependencies": {
+    "@electric-sql/pglite": "0.5.15"
+  }
+}

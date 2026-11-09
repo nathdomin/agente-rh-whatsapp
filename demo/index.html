@@ -1,0 +1,331 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Assistente de RH: demonstração</title>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Figtree:wght@400;500;600&display=swap">
+<style>
+:root {
+  --bg: #e9efec; --panel: #ffffff; --ink: #15302b; --muted: #5a736d; --line: #d5e0dc;
+  --accent: #0b6e5f; --on-accent: #ffffff; --chat: #e4ece7; --in: #d7f2e6; --out: #ffffff;
+  --selected: #e1efe9; --warn: #8a5a00; --warn-bg: #fbeed2; --info-bg: #dcefe8; --stop-bg: #e8e4f4; --stop: #4b3b8f;
+  --font: "Figtree", "Segoe UI", system-ui, sans-serif;
+}
+@media (prefers-color-scheme: dark) {
+  :root {
+    --bg: #0c1513; --panel: #16221e; --ink: #e6f0ec; --muted: #9db4ad; --line: #2b3d37;
+    --accent: #5fd0b6; --on-accent: #0c1513; --chat: #101a17; --in: #14513f; --out: #22312b;
+    --selected: #20332c; --warn: #f2c877; --warn-bg: #3d2f12; --info-bg: #17392f; --stop-bg: #2c2750; --stop: #c6bdf5;
+  }
+}
+* { box-sizing: border-box; }
+html, body { height: 100%; }
+body { margin: 0; background: var(--bg); color: var(--ink); font: 400 16px/1.45 var(--font); }
+button, textarea { font: inherit; color: inherit; }
+button { cursor: pointer; }
+button:focus-visible, textarea:focus-visible { outline: 2px solid var(--accent); outline-offset: 1px; }
+.app { height: 100%; display: grid; grid-template-columns: 320px minmax(0, 1fr); }
+aside { background: var(--panel); border-right: 1px solid var(--line); display: flex; flex-direction: column; min-height: 0; }
+.brand { padding: 18px 18px 14px; border-bottom: 1px solid var(--line); }
+.brand h1 { margin: 0; font-size: 1.15rem; font-weight: 600; }
+.brand p { margin: 4px 0 0; font-size: .85rem; color: var(--muted); }
+.people { flex: 1; overflow-y: auto; }
+.person { display: flex; gap: 12px; align-items: center; width: 100%; text-align: left; background: none; border: 0; border-bottom: 1px solid var(--line); padding: 12px 18px; }
+.person:hover { background: var(--selected); }
+.person[aria-current="true"] { background: var(--selected); }
+.avatar { flex: none; width: 42px; height: 42px; border-radius: 50%; background: var(--accent); color: var(--on-accent); display: grid; place-items: center; font-weight: 600; }
+.person strong { display: block; font-weight: 600; }
+.person span span { display: block; font-size: .85rem; color: var(--muted); }
+.side-foot { padding: 12px 18px; border-top: 1px solid var(--line); display: grid; gap: 8px; font-size: .8rem; color: var(--muted); }
+.reset { background: none; border: 1px solid var(--line); border-radius: 8px; padding: 7px 10px; font-size: .85rem; }
+main { display: flex; flex-direction: column; min-height: 0; min-width: 0; background: var(--chat); }
+.head { background: var(--panel); border-bottom: 1px solid var(--line); padding: 12px 20px; display: flex; gap: 12px; align-items: center; }
+.head strong { display: block; font-weight: 600; }
+.head small { color: var(--muted); }
+.log { flex: 1; overflow-y: auto; padding: 22px max(20px, 8%); display: flex; flex-direction: column; gap: 8px; }
+.empty { margin: auto; text-align: center; color: var(--muted); max-width: 40ch; }
+.msg { max-width: min(72%, 560px); padding: 8px 12px; border-radius: 10px; white-space: pre-wrap; overflow-wrap: anywhere; }
+.msg.user { align-self: flex-end; background: var(--in); }
+.msg.bot { align-self: flex-start; background: var(--out); }
+.msg em { display: block; font-style: normal; font-size: .85rem; color: var(--muted); margin-top: 4px; }
+.status { align-self: center; font-size: .8rem; font-weight: 500; padding: 4px 11px; border-radius: 999px; background: var(--info-bg); margin: 4px 0; text-align: center; }
+.status.warn { background: var(--warn-bg); color: var(--warn); }
+.status.stop { background: var(--stop-bg); color: var(--stop); }
+.typing { align-self: flex-start; background: var(--out); padding: 10px 14px; border-radius: 10px; color: var(--muted); font-size: .9rem; }
+.chips { display: flex; flex-wrap: wrap; gap: 8px; padding: 10px max(20px, 8%) 0; }
+.chip { background: var(--panel); border: 1px solid var(--line); border-radius: 999px; padding: 5px 12px; font-size: .88rem; }
+.chip:hover { border-color: var(--accent); }
+form { display: flex; gap: 8px; align-items: flex-end; padding: 12px max(20px, 8%) 16px; }
+textarea { flex: 1; min-width: 0; resize: none; height: 44px; max-height: 120px; padding: 10px 14px; border: 1px solid var(--line); border-radius: 10px; background: var(--panel); }
+.tool, .send { flex: none; height: 44px; border-radius: 10px; padding: 0 13px; font-size: .9rem; font-weight: 500; }
+.tool { background: var(--panel); border: 1px solid var(--line); }
+.tool.recording { background: var(--warn-bg); color: var(--warn); border-color: var(--warn); }
+.send { background: var(--accent); color: var(--on-accent); border: 0; }
+button:disabled { opacity: .55; cursor: default; }
+@media (max-width: 760px) {
+  .app { grid-template-columns: minmax(0, 1fr); grid-template-rows: auto minmax(0, 1fr); }
+  aside { border-right: 0; border-bottom: 1px solid var(--line); }
+  .people { display: flex; overflow-x: auto; }
+  .person { flex: none; width: auto; border-bottom: 0; padding: 8px 12px; }
+  .person span span, .side-foot, .brand p { display: none; }
+  .brand { padding: 10px 14px; }
+  .msg { max-width: 88%; }
+}
+</style>
+</head>
+<body>
+<div class="app">
+  <aside>
+    <div class="brand">
+      <h1>Assistente de RH</h1>
+      <p>Demonstração com a Empresa Exemplo, que é fictícia. Não digite dados reais.</p>
+    </div>
+    <nav class="people" id="people" aria-label="Pessoas da demonstração"></nav>
+    <div class="side-foot">
+      <span>A mesma IA, regras e documentos do WhatsApp. Só o canal de envio é simulado.</span>
+      <button class="reset" id="reset" type="button">Apagar conversas e recomeçar</button>
+    </div>
+  </aside>
+  <main>
+    <div class="head">
+      <div class="avatar" id="head-avatar" aria-hidden="true"></div>
+      <div><strong id="head-name"></strong><small id="head-role"></small></div>
+    </div>
+    <div class="log" id="log" aria-live="polite"></div>
+    <div class="chips" id="chips"></div>
+    <form id="form">
+      <button class="tool" id="photo" type="button" title="Simula o envio de uma foto">Foto</button>
+      <button class="tool" id="mic" type="button">Áudio</button>
+      <textarea id="input" placeholder="Digite uma mensagem" aria-label="Mensagem"></textarea>
+      <button class="send" id="send" type="submit">Enviar</button>
+    </form>
+  </main>
+</div>
+
+<script>
+const PEOPLE = [
+  { id: "ana", name: "Ana", role: "Funcionária ativa", phone: "5500900000001",
+    chips: ["como peço a segunda via do crachá?", "como incluo minha filha no plano?", "precisa de qual documento?", "como faço para pedir demissão?", "qual o valor do vale-refeição?"] },
+  { id: "bruno", name: "Bruno", role: "Na lista de desligados", phone: "5500900000002",
+    chips: ["qual o valor do vale-refeição?"] },
+  { id: "carla", name: "Carla", role: "Ex-funcionária, fora da lista", phone: "5500900000003",
+    chips: ["fui desligada semana passada"] },
+  { id: "diego", name: "Diego", role: "Tema sensível", phone: "5500900000004",
+    chips: ["meu gestor está me assediando"] },
+  { id: "elisa", name: "Elisa", role: "Pergunta fora dos documentos", phone: "5500900000005",
+    chips: ["a empresa tem estacionamento?"] },
+];
+
+const STATUS = {
+  resposta: ["Respondida com base nos documentos", ""],
+  saudacao: ["Saudação", ""],
+  fora_escopo: ["Fora dos assuntos de RH", "warn"],
+  desligado: ["Resposta pronta de desligados, sem usar IA", "stop"],
+  desligado_repetido: ["Resposta de desligados já enviada nos últimos 7 dias", "stop"],
+  transferido: ["Encaminhada para a equipe de RH", "warn"],
+  silencio_humano: ["A equipe está atendendo. A IA fica em silêncio.", "warn"],
+  sem_cota: ["Cota do dia esgotada. Ficou na fila da equipe, sem resposta.", "warn"],
+};
+
+const REASONS = {
+  sensivel: "tema sensível", anexo: "anexo", dado_individual: "dado individual",
+  sem_resposta: "sem resposta nos documentos",
+};
+
+const $ = (id) => document.getElementById(id);
+const STORAGE_KEY = "demo-rh-conversas";
+let current = PEOPLE[0];
+let busy = false;
+let recorder = null;
+
+function loadLogs() {
+  try { return JSON.parse(localStorage.getItem(STORAGE_KEY)) || {}; } catch { return {}; }
+}
+let logs = loadLogs();
+
+function saveLogs() {
+  try { localStorage.setItem(STORAGE_KEY, JSON.stringify(logs)); } catch { /* conveniência apenas */ }
+}
+
+function format(text) {
+  const escaped = text.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;");
+  return escaped.replace(/\*([^*\n]+)\*/g, "<strong>$1</strong>");
+}
+
+function renderPeople() {
+  $("people").replaceChildren(...PEOPLE.map((person) => {
+    const button = document.createElement("button");
+    button.className = "person";
+    button.type = "button";
+    button.setAttribute("aria-current", String(person === current));
+    button.innerHTML = `<div class="avatar" aria-hidden="true">${person.name[0]}</div><span><strong>${person.name}</strong><span>${person.role}</span></span>`;
+    button.onclick = () => { current = person; render(); };
+    return button;
+  }));
+}
+
+function bubble(item) {
+  if (item.type === "status") {
+    const el = document.createElement("div");
+    el.className = `status ${item.tone || ""}`;
+    el.textContent = item.text;
+    return el;
+  }
+  const el = document.createElement("div");
+  el.className = `msg ${item.type}`;
+  el.innerHTML = format(item.text);
+  if (item.note) {
+    const note = document.createElement("em");
+    note.textContent = item.note;
+    el.append(note);
+  }
+  return el;
+}
+
+function renderLog() {
+  const items = logs[current.id] || [];
+  const log = $("log");
+  if (items.length === 0 && !busy) {
+    const empty = document.createElement("div");
+    empty.className = "empty";
+    empty.textContent = `Conversa de ${current.name}. Use uma sugestão abaixo ou escreva uma pergunta.`;
+    log.replaceChildren(empty);
+    return;
+  }
+  log.replaceChildren(...items.map(bubble));
+  if (busy) {
+    const typing = document.createElement("div");
+    typing.className = "typing";
+    typing.textContent = "digitando...";
+    log.append(typing);
+  }
+  log.scrollTop = log.scrollHeight;
+}
+
+function render() {
+  renderPeople();
+  $("head-avatar").textContent = current.name[0];
+  $("head-name").textContent = current.name;
+  $("head-role").textContent = current.role;
+  $("chips").replaceChildren(...current.chips.map((text) => {
+    const chip = document.createElement("button");
+    chip.className = "chip";
+    chip.type = "button";
+    chip.textContent = text;
+    chip.disabled = busy;
+    chip.onclick = () => sendMessage({ kind: "text", text }, text);
+    return chip;
+  }));
+  $("send").disabled = busy;
+  $("photo").disabled = busy;
+  $("mic").disabled = busy && !recorder;
+  renderLog();
+}
+
+function add(personId, item) {
+  (logs[personId] ||= []).push(item);
+  saveLogs();
+}
+
+async function api(body) {
+  const response = await fetch("/api", {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify(body),
+  });
+  const data = await response.json();
+  if (!response.ok) throw new Error(data.error || "Falha ao enviar");
+  return data;
+}
+
+async function sendMessage(payload, label) {
+  if (busy) return;
+  const person = current;
+  const userItem = { type: "user", text: label };
+  add(person.id, userItem);
+  busy = true;
+  render();
+  try {
+    const data = await api({ phone: person.phone, ...payload });
+    if (data.transcript) { userItem.note = `Transcrição: ${data.transcript}`; saveLogs(); }
+    for (const reply of data.replies) add(person.id, { type: "bot", text: reply });
+    const [text, tone] = STATUS[data.action] || [null];
+    if (text) {
+      const reason = REASONS[data.detail];
+      add(person.id, { type: "status", tone, text: reason ? `${text} (${reason})` : text });
+    }
+    if (data.detail && String(data.detail).startsWith("falha_llm")) {
+      add(person.id, { type: "status", tone: "warn", text: "A IA ficou indisponível. A pergunta foi para a fila." });
+    }
+  } catch (error) {
+    add(person.id, { type: "status", tone: "warn", text: `Não foi possível enviar: ${error.message}` });
+  }
+  busy = false;
+  render();
+}
+
+$("form").addEventListener("submit", (event) => {
+  event.preventDefault();
+  const text = $("input").value.trim();
+  if (!text || busy) return;
+  $("input").value = "";
+  sendMessage({ kind: "text", text }, text);
+});
+
+$("input").addEventListener("keydown", (event) => {
+  if (event.key === "Enter" && !event.shiftKey) {
+    event.preventDefault();
+    $("form").requestSubmit();
+  }
+});
+
+$("photo").onclick = () => sendMessage({ kind: "image" }, "[Foto enviada]");
+
+$("mic").onclick = async () => {
+  if (recorder) { recorder.stop(); return; }
+  let stream;
+  try {
+    stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+  } catch {
+    add(current.id, { type: "status", tone: "warn", text: "Permita o uso do microfone no navegador para gravar." });
+    render();
+    return;
+  }
+  const chunks = [];
+  const active = new MediaRecorder(stream);
+  recorder = active;
+  active.ondataavailable = (event) => chunks.push(event.data);
+  active.onstop = async () => {
+    stream.getTracks().forEach((track) => track.stop());
+    recorder = null;
+    $("mic").textContent = "Áudio";
+    $("mic").classList.remove("recording");
+    const blob = new Blob(chunks, { type: active.mimeType });
+    const bytes = new Uint8Array(await blob.arrayBuffer());
+    let binary = "";
+    for (const byte of bytes) binary += String.fromCharCode(byte);
+    sendMessage({ kind: "audio", audio: btoa(binary), audioType: active.mimeType }, "[Áudio enviado]");
+  };
+  active.start();
+  setTimeout(() => { if (active.state === "recording") active.stop(); }, 60_000);
+  $("mic").textContent = "Parar";
+  $("mic").classList.add("recording");
+};
+
+$("reset").onclick = async () => {
+  if (!confirm("Apagar as conversas da demonstração, as respostas aprendidas e a contagem da cota?")) return;
+  try {
+    await api({ action: "reset" });
+    logs = {};
+    saveLogs();
+  } catch (error) {
+    add(current.id, { type: "status", tone: "warn", text: `Não foi possível apagar: ${error.message}` });
+  }
+  render();
+};
+
+render();
+</script>
+</body>
+</html>

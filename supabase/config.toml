@@ -1,0 +1,11 @@
+project_id = "agente-rh-demo"
+
+# A Meta e o Apps Script não enviam JWT do Supabase. Cada função valida a própria assinatura ou segredo.
+[functions.whatsapp-webhook]
+verify_jwt = false
+
+[functions.sheets-api]
+verify_jwt = false
+
+[functions.demo-chat]
+verify_jwt = false
